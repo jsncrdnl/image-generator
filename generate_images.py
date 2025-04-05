@@ -12,6 +12,7 @@ API_URL = "https://api.vyro.ai/v2/image/generations"
 # Your OpenAI API key
 load_dotenv()
 API_KEY = os.getenv('API_KEY')
+IMG_PER_LINE = int(os.getenv('IMG_PER_LINE'))
 
 # Injected base string for image generation 
 # Use it to make the generate images look the same with Lunii standart format 
@@ -40,7 +41,7 @@ def sanitize_filename(text):
     return re.sub(r'[<>:"/\\|?*]', '_', text)[:100]  # Limit filename length
 
 # Function to generate image from text description using OpenAI API (DALL-E)
-def generate_image(description, index):
+def generate_image(description, index, iteration):
     headers = {
         "Authorization": f"Bearer {API_KEY}"
     }
@@ -63,8 +64,8 @@ def generate_image(description, index):
 
         # Save the image as a PNG file
         filename = sanitize_filename(description)
-        image.save(f'{output_dir}/{index}_{filename}.png')
-        print(f"Image {index} generated and saved.")
+        image.save(f'{output_dir}/{index}_{iteration}_{filename}.png')
+        print(f"Image {index}_{iteration}_{filename}.png generated")
     else:
         print(f"Failed to generate image {index}: {response.text}")
 
@@ -72,6 +73,7 @@ def generate_image(description, index):
 for i, line in enumerate(lines):
     description = line.strip()  # Clean up the description
     if description:  # Avoid processing empty lines
-        generate_image(description, i)
+        for j in range(IMG_PER_LINE):
+            generate_image(description, i, j)
 
 print(f"Generated {len(lines)} images in the '{output_dir}' folder.")
